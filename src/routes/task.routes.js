@@ -23,7 +23,7 @@ router.post("/", async(req, res) =>{
 router.put("/:id", async(req, res) =>{
     const { title, description } = req.body;
     const task = ({title, description});
-    await Task.findOneAndUpdate(req.params.id,task);
+    await Task.findByIdAndUpdate(req.params.id,task);
     res.json({status:"Task updated"});
 })
 

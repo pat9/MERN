@@ -6,32 +6,57 @@ class App extends Component{
     constructor(){
         super();
         this.state ={
+            _id:'',
             title:'',
             description:'',
             tasks:[]
         }
         this.AgregarTarea = this.AgregarTarea.bind(this);
         this.handleOnChange = this.handleOnChange.bind(this);
+        this.getTasks = this.getTasks.bind(this);
+        this.DeleteTask = this.DeleteTask.bind(this);
+        this.getTask = this.getTask.bind(this);
     }
 
     AgregarTarea(e)
     {
-        fetch('/api/tasks', {
-            method: 'POST',
-            body: JSON.stringify(this.state),
-            headers:{
-                'Accept':'application/json',
-                'Content-Type':'application/json',
-
-            }
-        }).then(resp => resp.json)
-        .then(data => {
-            console.log(data);
-            Materialize.toast('Task Saved');
-            this.setState({title:'', description:''})
-            this.getTasks();
-        })
-        .catch(err =>console.log(err))
+        if(this.state._id == '')
+        {
+            fetch('/api/tasks', {
+                method: 'POST',
+                body: JSON.stringify(this.state),
+                headers:{
+                    'Accept':'application/json',
+                    'Content-Type':'application/json',
+    
+                }
+            }).then(resp => resp.json)
+            .then(data => {
+                console.log(data);
+                Materialize.toast('Task Saved', 1000);
+                this.setState({title:'', description:''})
+                this.getTasks();
+            })
+            .catch(err =>console.log(err))
+        }else{
+            fetch(`/api/tasks/${this.state._id}`, {
+                method: 'PUT',
+                body: JSON.stringify(this.state),
+                headers:{
+                    'Accept':'application/json',
+                    'Content-Type':'application/json',
+    
+                }
+            }).then(resp => resp.json)
+            .then(data => {
+                console.log(data);
+                Materialize.toast('Task Updated', 1000);
+                this.setState({_id:'',  title:'', description:''})
+                this.getTasks();
+            })
+            .catch(err =>console.log(err))
+        }
+        
         e.preventDefault();
     }
 
@@ -41,6 +66,37 @@ class App extends Component{
 
     getTasks(){
         fetch('/api/tasks').then(resp => resp.json()).then(data => {this.setState({tasks:data})})
+    }
+
+    getTask(id){
+        fetch(`/api/tasks/${id}`)
+        .then(resp=>resp.json())
+        .then(data=>{
+            const {_id, title, description} = data;
+            this.setState({
+                _id,
+                title,
+                description
+            })
+            console.log(this.state)
+        })
+    }
+
+    DeleteTask(id){
+        fetch(`/api/tasks/${id}`, {
+            method:'DELETE',
+            headers:{
+                'Accept':'application/json',
+                'Content-Type':'application/json',
+
+            }
+        })
+        .then(resp => resp.json)
+        .then(data=>{
+            console.log('Se ejecuto esta vaina');
+            Materialize.toast('Task deleted', 1000);
+            this.getTasks();
+        })
     }
 
     handleOnChange(e)
@@ -99,6 +155,19 @@ class App extends Component{
                                                 <tr key={task._id}>
                                                     <td>{task.title}</td>
                                                     <td>{task.description}</td>
+                                                    <td>
+                                                        <button className="btn light-blue darken-4"
+                                                                onClick={() => this.getTask(task._id)}>
+                                                            <i className="material-icons">edit</i>
+                                                            
+                                                        </button>
+                                                        <button className="btn light-blue darken-4"
+                                                                style={{margin:'4px'}}
+                                                                onClick={() => {this.DeleteTask(task._id)}}>
+                                                            <i className="material-icons">delete</i>
+                                                            
+                                                        </button>
+                                                    </td>
                                                 </tr>
                                             )
                                         })
