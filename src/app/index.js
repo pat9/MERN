@@ -7,7 +7,8 @@ class App extends Component{
         super();
         this.state ={
             title:'',
-            description:''
+            description:'',
+            tasks:[]
         }
         this.AgregarTarea = this.AgregarTarea.bind(this);
         this.handleOnChange = this.handleOnChange.bind(this);
@@ -28,9 +29,18 @@ class App extends Component{
             console.log(data);
             Materialize.toast('Task Saved');
             this.setState({title:'', description:''})
+            this.getTasks();
         })
         .catch(err =>console.log(err))
         e.preventDefault();
+    }
+
+    componentDidMount(){
+        this.getTasks();
+    }
+
+    getTasks(){
+        fetch('/api/tasks').then(resp => resp.json()).then(data => {this.setState({tasks:data})})
     }
 
     handleOnChange(e)
@@ -75,6 +85,26 @@ class App extends Component{
                             </div>
                         </div>
                         <div className="col s7">
+                            <table className="">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {
+                                        this.state.tasks.map(task =>{
+                                            return (
+                                                <tr key={task._id}>
+                                                    <td>{task.title}</td>
+                                                    <td>{task.description}</td>
+                                                </tr>
+                                            )
+                                        })
+                                    }
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
